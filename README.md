@@ -8,7 +8,7 @@ An autonomous spatial-semantic tour synthesis and walking route optimization eng
 
 Standard navigation engines (Google Maps, OSRM, GraphHopper) optimize for physical travel distance or transit time via Dijkstra/A* routing. This approach fails for experiential urban walks:
 
-* **Linear Shortest-Path Bias**: Forces pedestrians onto noisy primary arteriors simply because they provide the geometrically shortest vector.
+* **Linear Shortest-Path Bias**: Forces pedestrians onto noisy primary arterials simply because they provide the geometrically shortest vector.
 * **Semantic Disconnect**: Global ranking of points of interest (POIs) pulls users toward tourist hubs (e.g., city center) even when starting from residential districts.
 * **Trivial Loops & Backtracking**: Enforcing return trips often leads to retracing identical streets in reverse.
 
@@ -56,24 +56,28 @@ User Free-Text Prompt + Live Anchor GPS
 │  - Stage Swap with Real Walking Metrics      │
 │  - Standard GPX & Direct Google Maps Export  │
 └──────────────────────────────────────────────┘
+```
+
+---
+
 ## 3. Engineering Highlights
 
 ### Spatial-Semantic Hybrid Retrieval
-Candidate selection balances conceptual match and walkable accessibility. It employs an exact euclidean penalty:
+Candidate selection balances conceptual match and walkable accessibility. It employs an exact euclidean distance penalty:
 
-Score(c) = CrossEncoder(intent, desc_c) - (dist_from_anchor_km * alpha)
+$$Score(c) = CrossEncoder(intent, desc_c) - (dist\_from\_anchor\_km \times \alpha)$$
 
-First stops (e.g., morning coffee) prioritize proximity (alpha = 4.0), anchoring nearby options (under 800m) before fanning out.
+First stops (e.g., morning coffee) prioritize proximity ($\alpha = 4.0$), anchoring nearby options before fanning out.
 
 ### Non-Repeating Closed Loops
-Closed-loop routing enforces return-to-origin constraints without repeating path segments. Edges traversed in preceding tour stages incur an immediate x7.0 cost multiplier on the return leg, forcing Dijkstra's algorithm to synthesize a diverse return path through parallel residential boulevards.
+Closed-loop routing enforces return-to-origin constraints without repeating path segments. Edges traversed in preceding tour stages incur an immediate $\times 7.0$ cost multiplier on the return leg, forcing Dijkstra's algorithm to synthesize a diverse return path through parallel residential boulevards.
 
 ### Multi-Criteria Edge Costing
 Street edges from OpenStreetMap dynamically receive penalty or incentive multipliers:
-* **Rain Guard**: Unpaved/dirt trails penalized x8.0; paved sidewalks prioritized.
-* **Night Light Guard**: Unlit footpaths penalized x4.0; illuminated roads favored.
-* **Pollen Guard**: Parks and unpaved recreational grounds penalized x6.0.
-* **Heritage Mode**: Historic cobblestone and dedicated pedestrian plazas discounted to 0.5 base cost.
+* **Rain Guard**: Unpaved/dirt trails penalized $\times 8.0$; paved sidewalks prioritized.
+* **Night Safety Guard**: Unlit footpaths and dark lake trails penalized $\times 25.0$; illuminated roads favored.
+* **Pollen Guard**: Parks and unpaved recreational grounds penalized $\times 6.0$.
+* **Heritage Mode**: Historic cobblestone and dedicated pedestrian plazas discounted to $0.5$ base cost.
 
 ---
 
@@ -88,7 +92,7 @@ Benchmarked on an autonomous test suite across diverse urban scenarios (Historic
 | HNSW Vector Retrieval | 3.4 ms | 5.2 ms | PostgreSQL 16 + pgvector (M=16, ef=64) |
 | Cross-Encoder Reranking | 26.8 ms | 34.1 ms | MiniLM Cross-Encoder (Top-45 candidates) |
 | Topological Graph Optimizer | 31.2 ms | 42.5 ms | NetworkX Dijkstra + Anti-Backtracking Penalties |
-| Total End-to-End Latency | 68.5 ms | 88.0 ms | Complete pipeline execution |
+| **Total End-to-End Latency** | **68.5 ms** | **88.0 ms** | Complete pipeline execution |
 
 ### A/B Route Quality: Baseline vs. UrbanRAG
 
@@ -105,7 +109,7 @@ Benchmarked on an autonomous test suite across diverse urban scenarios (Historic
 
 * **Backend Framework**: FastAPI (Asynchronous Python 3.11)
 * **Vector Store**: PostgreSQL 16 with pgvector and HNSW indexing
-* **ML Inference**: sentence-transformers (all-MiniLM-L6-v2, ms-marco-MiniLM-L-6-v2)
+* **ML Inference**: sentence-transformers (`all-MiniLM-L6-v2`, `ms-marco-MiniLM-L-6-v2`)
 * **Spatial & Graph Engine**: NetworkX, OSMnx, Shapely, PyProj
 * **Geocoding & Data Source**: OpenStreetMap (Overpass API + Nominatim)
 * **Frontend**: Vanilla JavaScript (ES6+), Leaflet.js, CSS Custom Properties
@@ -118,18 +122,21 @@ Benchmarked on an autonomous test suite across diverse urban scenarios (Historic
 * Docker and Docker Compose installed.
 
 ### Production Run via Docker Compose
+
 ```bash
 # 1. Clone repository
-git clone [https://github.com/yourusername/urbanrag-engine.git](https://github.com/yourusername/urbanrag-engine.git)
+git clone https://github.com/yourusername/urbanrag-engine.git
 cd urbanrag-engine
 
 # 2. Build and start services (automatic database bootstrap & index creation)
 docker compose up --build
+```
 
-Access the application interface at http://localhost:8000.
+Access the application interface at `http://localhost:8000`.
 
-Manual Local Setup (Development)
+### Manual Local Setup (Development)
 
+```bash
 # 1. Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\Activate.ps1
@@ -142,9 +149,19 @@ python -m src.ingest_osm
 
 # 4. Start development server
 uvicorn src.main:app --reload --port 8000
+```
 
-Running Automated Benchmarks
+### Running Automated Benchmarks
 
+```bash
+python benchmark_eval.py
+```
+
+---
+
+## 7. License
+
+Distributed under the MIT License.
 python benchmark_eval.py
 
 7. License
