@@ -1,0 +1,17 @@
+# Python & Virtualenv
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+
+# Data & Caches
+pgdata/
+data/osm_places_backup.json
+poltava_walk_7500.graphml
+
+# Environment & OS
+.env
+.DS_Store
+Thumbs.db
